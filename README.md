@@ -1,4 +1,4 @@
-# Denise_Portfolio
+# Denise-Portfolio
 Welcome to my portfolio! Feel free to check out my cool projects.
 
 # Project 1: Time Series STD Forecasting
