@@ -1,0 +1,367 @@
+---
+output: 
+  pdf_document:
+    keep_tex: true
+    fig_caption: true
+    latex_engine: pdflatex
+    number_sections: true
+    toc: true
+    toc_depth: 4
+title: "Project 1 - Time Series Forecasting STD Dynamics in San Diego"
+author: 
+- Denise Gandara^[denisegandara10@gmail.com]
+date: "`r format(Sys.time(), '%B %d, %Y')`"
+geometry: margin=1in
+fontsize: 11pt
+spacing: single
+header-includes:
+- \usepackage{amsmath}
+- \usepackage{amssymb}
+- \usepackage{amsfonts}
+- \usepackage{amsthm}
+- \usepackage{fancyhdr}
+- \pagestyle{fancy}
+- \fancyhf{}
+- \rhead{Time Series Project}
+- \lhead{}
+- \cfoot{\thepage}
+- \usepackage{algorithm}
+- \usepackage[noend]{algpseudocode}
+
+---
+---
+<!-- QUESTION ONE: WHAT --> 
+\noindent\rule{17.5cm}{0.8pt}
+
+
+\section{Problem}
+**The problem is to find which model most accurately predicts/forecasts future cases of Chlamydia and Gonorrhea in San Diego population.**
+How is data collected? <br>
+Cases of notifiable diseases such as STDs, are collected by health care providers in every state and reported to their respective reportable disease surveillance programs. This data can be used for analysis in forecasting future cases of STD’s. <br>
+
+How will we forecast? <br>
+Time Series Prediction Analysis is a methodology that can be used to forecast future cases of communicable diseases. 
+The predictions provide insights to implement measures to prevent spread of diseases.
+We will use different models and evaluate their performance using root mean square error.
+
+
+\section{Read Data}
+\subsection{Libraries}
+```{r}
+#install.packages("shiny")
+library(shiny)
+#install.packages("gridExtra")
+require(gridExtra)
+#install.packages("ggplot2")
+#install.packages("tidyverse")
+
+#library(dplyr)
+library(tidyverse)
+#install.packages("fpp2")
+library(fpp2)
+library(forecast)
+```
+
+\subsection{Data}
+```{r}
+setwd("~/Documents/Bridge Program/r.analysis")
+# 2004 to 2017
+SD.df = read.csv("SD.STDs.csv", header = TRUE)
+SD.df$Month = as.Date(paste(as.character(SD.df$Month), "-15", sep = ""))
+
+#2004 to 2012
+SD.df.train = SD.df[-c(109:168), ]
+SD.df.test = SD.df[c(109:168), ]
+
+head(SD.df)
+```
+
+
+\section{Exploratory Data Analysis}
+\subsection{Summary}
+```{r}
+colnames(SD.df)
+
+dim(SD.df)
+
+summary(SD.df)
+```
+The dataset provides the number of monthly STD cases from January 2004 to December 2017, 14 years of data. It contains 168 observations and 5 variables.
+
+\subsection{Plot Data}
+```{r}
+
+p<-ggplot(SD.df, aes(x=Month, y=Chlamydia)) +
+  geom_line() +
+  geom_point() +
+  ggtitle("Plot of San Diego \n Chlamydia cases")
+
+a<-ggplot(SD.df, aes(x=Month, y=Gonorrhea)) +
+  geom_line() +
+  geom_point() + ggtitle("Plot of San Diego \n Gonorrhea cases")
+#install.packages('cowplot')
+library(cowplot)
+plot_grid(p,a)
+```
+We see positive trends for both graphs. Possibly some exponential increase for Gonorrhea cases.
+
+
+\subsection{Distribution}
+```{r}
+p <- ggplot(SD.df, aes(x=Chlamydia))+
+  geom_histogram(color="darkblue", fill="lightblue")
+
+a <- ggplot(SD.df, aes(x=Gonorrhea))+
+  geom_histogram(color="red", fill="pink")
+
+plot_grid(p,a)
+```
+Both graphs show evidence of right skewness.
+
+
+\subsection{Monthly Analysis-Boxplots} 
+Sum of cases per month
+```{r}
+
+#group data by year and sum cases
+SD.df %>% 
+    group_by(year = lubridate::floor_date(Month, 'year')) %>%
+    summarize(sum_of_Chlamydia_cases = sum(Chlamydia)) 
+
+SD.df %>% 
+    group_by(year = lubridate::floor_date(Month, 'year')) %>%
+    summarize(sum_of_Gonorrhea_cases = sum(Gonorrhea)) 
+
+```
+Calculated the total number of cases for each month.
+
+```{r}
+#First Option involves adding a column with only Year, could have replaced Month column as well
+SD.df$Year <-format(SD.df$Month, format="%Y")
+#head(SD.df)
+boxplot(Chlamydia ~ Year, data = SD.df, xlab = "Year", ylab = "Chlamydia cases", main = "Chlamydia Boxplots per Year", col = c("#bef7ff", "#c3f3ee", "#c8eede", "#cdeacd", "#d2e5bc", "#d7e1ac", "#dcdd9b", "#e1d88a", "#e6d479", "#ebd069", "#f0cb58", "#f5c747", "#fac237", "#ffbe26"))
+
+#Second Option involves grouping by year, but the x labels will print out year-month-date which doesn't look nice
+#boxplot(Chlamydia ~ lubridate::floor_date(Month, 'year'), data = SD.df, xlab = "Year", ylab = "Chlamydia cases",col = c("#bef7ff", "#c3f3ee", "#c8eede", "#cdeacd", "#d2e5bc", "#d7e1ac", "#dcdd9b", "#e1d88a", "#e6d479", "#ebd069", "#f0cb58", "#f5c747", "#fac237", "#ffbe26"))
+
+boxplot(Gonorrhea ~ Year, data = SD.df, xlab = "Year", ylab = "Gonorrhea cases", main = "Gonorrhea Boxplots per Year", col = c("#bef7ff", "#bcf0ff", "#bae8ff", "#b8e1ff", "#b6d9ff", "#b4d2ff", "#b2cbff", "#b1c3ff", "#afbcff", "#adb5ff", "#abadff", "#a9a6ff", "#a79eff", "#a597ff"))
+```
+We see mostly increasing trend of cases for both STD's. Gonorrhea cases between 2006 and 2009 show evidence of a downward trend.
+
+
+
+\subsection{Autocorrelation plots}
+```{r}
+acf(SD.df.train$Chlamydia)  # it looks exponential. Looks like S=3
+                            #ACF doesn't go to zero, it needs differencing, remove trend. Use ARIMA
+pacf(SD.df.train$Chlamydia) #try AR(3) S=3
+
+```
+
+
+```{r}
+acf(SD.df.train$Gonorrhea) #looks exponential, S=3 maybe
+pacf(SD.df.train$Gonorrhea) #try AR(3) S=3
+```
+We check autocorrelation which measures the linear relationship between lagged values. The dashed blue lines indicate whether the correlations are significantly different from zero.
+A slow decrease in the ACF as the lags increase is due to the trend, while the “scalloped” shape is due to the seasonality. https://otexts.com/fpp3/acf.html
+
+We see evidence of trend and possibly seasonality for both STD cases
+
+
+
+```{r}
+tsdata.C = ts(SD.df.train$Chlamydia, frequency = 12, start = (2004)) # Chlamydia
+tsdata.G = ts(SD.df.train$Gonorrhea, frequency = 12, start = (2004)) # Gonorrhea
+```
+Now we convert data to timeseries data
+
+
+\subsection{Decomposition}
+```{r}
+#Chlamydia
+autoplot(decompose(tsdata.C))
+
+#Gonorrhea
+autoplot(decompose(tsdata.G))
+
+```
+
+
+
+\subsection{Seasonality}
+```{r}
+ggseasonplot(tsdata.C) +
+    ggtitle("Seasonal plot Chlamydia")
+
+ggseasonplot(tsdata.G) +
+    ggtitle("Seasonal plot Gonorrhea")
+
+#another method
+# a <- ggsubseriesplot(tsdata.C)
+# b <- ggsubseriesplot(tsdata.G)
+# plot_grid(a,b)
+
+```
+It is difficult to tell whether there is evidence of seasonality.
+
+\section{Modelling}
+
+
+\subsection{ARIMA model}
+ARIMA is the abbreviation for AutoRegressive Integrated Moving Average and is the most widely used approach for forecasting time series data. 
+Auto Regressive (AR) terms refer to the lags of the differenced series, Moving Average (MA) terms refer to the lags of errors and I is the number of difference used to make the time series stationary. https://datascienceplus.com/time-series-analysis-using-arima-model-in-r/
+```{r, include=FALSE, results='hide'}
+# Data has to be stationary in order to fit. This means no trend and no seasonality
+# d = 1 gets rid of trend, alternative to diff(tsdata.C)
+# D = 1 gets rid of seasonality by taking first seasonal difference
+# approx = FALSE so it computes exact AIC and not approx AIC to save time
+# stepwise = FALSE so it can try every possible combination of ARIMA models and not try a few and modify a bit to save time
+# trace = TRUE so it prints out all the models it tries out with AICs
+
+# p=ar/pacf <br>
+# d=i/diff <br>
+# q=ma/acf
+```
+
+```{r, echo=FALSE, results="hide"}
+# mod<-arima(tsdata.C,order=c(3, 1, 0),
+#             seasonal=list(order=c(0, 1, 0), period=3))
+# mod2<-arima(tsdata.C,order=c(3, 1, 0),
+#             seasonal=list(order=c(0, 1, 0), period=12))
+# mod3<-arima(tsdata.C,order=c(2, 1, 0),
+#             seasonal=list(order=c(0, 1, 0), period=12))
+# mod4<-arima(tsdata.C,order=c(2, 1, 0),
+#             seasonal=list(order=c(0, 0, 0), period=12))
+# summary(mod4)
+# checkresiduals(mod4)
+
+```
+
+```{r}
+C.arima <- auto.arima(tsdata.C, stepwise = FALSE, approximation = FALSE) 
+G.arima <- auto.arima(tsdata.G, stepwise = FALSE, approximation = FALSE)
+```
+
+
+
+```{r}
+summary(C.arima)
+summary(G.arima)
+```
+Our chlamydia model created a Seasonal ARIMA model because it detected seasonality.
+Our gonorrhea model created a ARIMA model without seasonality.
+
+
+```{r}
+checkresiduals(C.arima)
+checkresiduals(G.arima)
+
+```
+Chlamydia model seems to show normality with zero mean (bottom right plot). We can observe that the residuals may still be correlated (bottom left plot). 
+
+Gonorrhea model seems to be performing well. We see normality and we can observe that the residuals are uncorrelated (bottom left plot) and do not exhibit any obvious seasonality (the top plot). Also, the residuals are roughly normally distributed with zero mean (bottom right plot). Again, this is a strong indication that the residuals are normally distributed which is what we want.
+
+
+```{r}
+C.forecast <- forecast(C.arima, h = 60)  
+#autoplot(C.forecast, main = "ARIMA Forecast Chlamydia")
+#summary(C.forecast)  prints point forecast and intervals  
+
+
+G.forecast <- forecast(G.arima, h = 60)
+#autoplot(G.forecast, main = "ARIMA Forecast Gonorrhea")
+#summary(G.forecast)  prints point forecast and intervals  
+
+```
+Obtained the forecast for ARIMA models
+
+
+
+```{r, include=FALSE, results='hide' }
+#plot residuals over time to see congruence or variance
+# standarad deviation of residuals tells us if it forecasts well
+autoplot(C.forecast$residuals)
+autoplot(G.forecast$residuals)
+
+#plot residuals (sanple vs theoretical)
+qqnorm(C.forecast$residuals)
+qqnorm(G.forecast$residuals)
+```
+
+
+\subsection{Exponential Smoothing Method model}
+This method produces forecasts that are weighted averages of past observations where the weights of older observations exponentially decrease.
+```{r}
+fit_ets <- ets(tsdata.C)
+fit_ets2 <- ets(tsdata.G)
+```
+
+```{r}
+summary(fit_ets)
+summary(fit_ets2)
+```
+
+```{r}
+checkresiduals(fit_ets)
+checkresiduals(fit_ets2)
+```
+Chlamydia model seems to show some right skewness (bottom right plot). We can observe that the residuals may still be correlated (bottom left plot). 
+
+Gonorrhea model seems to be performing well. We can observe that the residuals are uncorrelated (bottom left plot) and do not exhibit any obvious seasonality (the top plot). It is difficult to tell whether the residuals are normally distributed with zero mean since it seems to divide in the center (bottom right plot).
+
+
+
+```{r}
+frct <- forecast(fit_ets, h = 60)
+#autoplot(frct, main = "ETS Forecast Chlamydia")  # include = 60 shows last 5 years of data
+#summary(frct) #prints point forecast
+frct2 <- forecast(fit_ets2, h = 60)
+#autoplot(frct2, main = "ETS Forecast Gonorrhea")
+```
+Obtained the forecast for ETS
+
+
+\section{Model Comparison}
+```{r}
+# Current data 2018 and 2019 data only
+actual.C = ts(SD.df.test$Chlamydia, frequency = 12, start = (2013)) # Chlamydia
+actual.G = ts(SD.df.test$Gonorrhea, frequency = 12, start = (2013)) # Gonorrhea
+
+
+# Chlamydia Models
+par(mfrow=c(1,2))
+autoplot(C.forecast, main = "ARIMA Chlamydia Forecast", ylab = "Chlamydia Cases") + autolayer(actual.C)
+autoplot(frct, main = "ETS Chlamydia Forecast",  ylab = "Chlamydia Cases") + 
+    autolayer(actual.C) 
+# ETS
+par(mfrow=c(1,2))
+autoplot(G.forecast, main = "ARIMA Gonorrhea Forecast",  ylab = "Gonorrhea Cases") + autolayer(actual.G)
+autoplot(frct2, main = "ETS Gonorrhea Forecast",  ylab = "Gonorrhea Cases") + 
+    autolayer(actual.G) 
+    # include = 60 shows last 5 years of data
+
+```
+Here we plot the forecast data with actual data and compare results. We want to see whether ARIMA or ETS models can forecast STD cases better.
+ETS models seem to be performing better than ARIMA models since the actual data seems to fall more inbetween the predicted intervals.
+
+
+
+```{r}
+#Chlamydia models comparison
+print("ARIMA Chlamydia")
+accuracy(C.forecast, actual.C)
+print("ETS Chlamydia")
+accuracy(frct, actual.C)
+
+#Gonorrhea models comparison
+print("ARIMA Gonorrhea")
+accuracy(G.forecast, actual.G)
+print("ETS Gonorrhea")
+accuracy(frct2, actual.G)
+
+```
+We observe smaller root mean square error (RMSE) and smaller mean absolute error (MAE) for ETS models.
+The ETS models performed better than ARIMA models for forecasting San Diego STD cases. 
+
+
