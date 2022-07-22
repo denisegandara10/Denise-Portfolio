@@ -6,3 +6,5 @@ Welcome to my portfolio! Feel free to check out my cool project. Will be adding 
 * Forecasted future cases of STDs using ARIMA and Exponential Smoothing method
 * Created data visualization of models and forecast
 * Evaluated models using RMSE and MAE
+
+# Project 2: Youtube API
