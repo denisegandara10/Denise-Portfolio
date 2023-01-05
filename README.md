@@ -1,7 +1,7 @@
 # Denise Portfolio
 Welcome to my portfolio! Feel free to check out my cool project. Will be adding more soon. Click on the title of the project to have a look.
 
-# [Classifying IT violations from El Paso County using NLP](https://github.com/denisegandara10/Denise-Portfolio/blob/main/Ticket%20Classification%20Presentation.pdf)
+# [Classifying IT documemts from El Paso County using NLP](https://github.com/denisegandara10/Denise-Portfolio/blob/main/Ticket%20Classification%20Presentation.pdf)
 * Used Natural Language Processing algorithm to classify ticket descriptions to the correct IT department
 * Converted language from ticket descriptions to numbers that algorithm could understand
 * Shared neural network code with El Paso County IT Specialist so they may use to classify tickets with 90% accuracy
