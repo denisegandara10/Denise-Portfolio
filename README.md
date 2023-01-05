@@ -1,5 +1,5 @@
 # Denise Portfolio
-Welcome to my portfolio! Feel free to check out my cool project. Will be adding more soon. Click on the title of the project to have a look.
+Welcome to my portfolio! Feel free to check out my cool projects. Will be adding more soon. Click on the title of the project to take a look.
 
 # [Classifying IT documemts from El Paso County using NLP](https://github.com/denisegandara10/Denise-Portfolio/blob/main/Ticket%20Classification%20Presentation.pdf)
 * Used Natural Language Processing algorithm to classify ticket descriptions to the correct IT department
