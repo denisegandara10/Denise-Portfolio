@@ -7,4 +7,5 @@ Welcome to my portfolio! Feel free to check out my cool project. Will be adding 
 * Created data visualization of models and forecast
 * Evaluated models using RMSE and MAE
 
-# Project 2: Youtube API
+# Project 2: City of El Paso’s Ticketing System Classification using NLP 
+
