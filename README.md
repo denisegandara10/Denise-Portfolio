@@ -15,4 +15,4 @@ Welcome to my portfolio! Feel free to check out my cool project. Will be adding 
 * Created data visualization of models and forecast
 * Evaluated models using RMSE and MAE
 
-
+![alt text](https://github.com/denisegandara10/Denise-Portfolio/blob/main/ts_pic.png)
