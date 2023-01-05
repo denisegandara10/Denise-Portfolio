@@ -5,6 +5,8 @@ Welcome to my portfolio! Feel free to check out my cool project. Will be adding 
 * Used Natural Language Processing algorithm to classify ticket descriptions to the correct IT department
 * Converted language from ticket descriptions to numbers that algorithm could understand
 * Shared neural network code with El Paso County IT Specialist so they may use to classify tickets with 90% accuracy
+
+<div style="width: 60%; height: 60%">
 ![alt text](https://github.com/denisegandara10/Denise-Portfolio/blob/main/nlp_pic.png)
 
 
