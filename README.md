@@ -5,6 +5,7 @@ Welcome to my portfolio! Feel free to check out my cool project. Will be adding 
 * Used Natural Language Processing algorithm to classify ticket descriptions to the correct IT department
 * Converted language from ticket descriptions to numbers that algorithm could understand
 * Shared neural network code with El Paso County IT Specialist so they may use to classify tickets with 90% accuracy
+![alt text](https://github.com/denisegandara10/Denise-Portfolio/blob/main/nlp_pic.png)
 
 # [Time Series STD Forecasting](https://github.com/denisegandara10/Denise-Portfolio/blob/main/Project_ONE.pdf)
 * Data analysis of STD cases in San Diego between 2004 and 2017
