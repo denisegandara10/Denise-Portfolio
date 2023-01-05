@@ -7,5 +7,6 @@ Welcome to my portfolio! Feel free to check out my cool project. Will be adding 
 * Created data visualization of models and forecast
 * Evaluated models using RMSE and MAE
 
-# Project 2: City of El Paso’s Ticketing System Classification using NLP 
+# [Project 2: City of El Paso’s Ticketing System Classification using NLP](https://github.com/denisegandara10/Denise-Portfolio/blob/main/Ticket%20Classification%20Presentation.pdf)
+
 
