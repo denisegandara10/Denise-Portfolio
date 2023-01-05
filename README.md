@@ -1,4 +1,4 @@
-# Denise-Portfolio
+# Denise Portfolio
 Welcome to my portfolio! Feel free to check out my cool project. Will be adding more soon. Click on the title of the project to have a look.
 
 # [City of El Paso’s Ticketing System Classification using NLP](https://github.com/denisegandara10/Denise-Portfolio/blob/main/Ticket%20Classification%20Presentation.pdf)
