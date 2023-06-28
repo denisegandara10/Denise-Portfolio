@@ -4,6 +4,7 @@ Welcome to my portfolio! Feel free to check out my cool projects. Will be adding
 # [Tableau student survery data visualizations](https://public.tableau.com/views/DataViz_16836638210690/Dashboard1?:language=en-US&:display_count=n&:origin=viz_share_link)
 * Extracted insights of data collected from over 11,000 student surveys
 * Created interactive data visualization using Tableau
+* Data preprocessing to make data ready for analysis
 ![alt text](https://github.com/denisegandara10/Denise-Portfolio/blob/main/survey.png)
 
 
